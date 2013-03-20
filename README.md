@@ -39,7 +39,7 @@ case class CustomChange() extends Change {
 }
 ```
 
-# Launch the migrations
+### Launch the migrations
 
 ```scala
 Migmongo(db).process()
