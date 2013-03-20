@@ -1,6 +1,6 @@
 ### What is migmongo?
 
-MigMongo is a MongoDB migration manager written in Scala and inspired by mongeez.
+MigMongo is a MongoDB schema migration manager written in Scala and inspired by mongeez.
 
 ### Add migmongo to your project
 ```xml
