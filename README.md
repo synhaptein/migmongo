@@ -1,4 +1,4 @@
 migmongo
 ========
 
-MongoDB Scala migration manager
+MongoDB Scala migration manager inspired by mongeez

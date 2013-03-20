@@ -4,7 +4,6 @@ import commands._
 import collection.mutable
 import com.mongodb.casbah.MongoDB
 import commands.AsyncChangeSet
-import commands.ChangeSet
 import dao.MigmongoDao
 import org.slf4j.LoggerFactory
 import akka.actor.ActorSystem
