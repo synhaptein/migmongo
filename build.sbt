@@ -2,12 +2,12 @@ name := "migmongo"
 
 organization := "com.synhaptein"
 
-version := "1.0.0"
+version := "1.0.1"
 
 scalaVersion := "2.9.2"
 
-resolvers ++= Seq("snapshots"           at "http://oss.sonatype.org/content/repositories/snapshots",
-                  "releases"            at "http://oss.sonatype.org/content/repositories/releases",
+resolvers ++= Seq("Sonatype snapshots"           at "http://oss.sonatype.org/content/repositories/snapshots",
+                  "Sonatype releases"            at "http://oss.sonatype.org/content/repositories/releases",
                   "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
                 )
  
