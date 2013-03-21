@@ -2,21 +2,23 @@ name := "migmongo"
 
 organization := "com.synhaptein"
 
-version := "1.0.1"
+version := "1.1.0-SNAPSHOT"
 
-scalaVersion := "2.9.2"
+scalaVersion := "2.10.0"
 
-resolvers ++= Seq("Sonatype snapshots"           at "http://oss.sonatype.org/content/repositories/snapshots",
-                  "Sonatype releases"            at "http://oss.sonatype.org/content/repositories/releases",
-                  "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
+resolvers ++= Seq("Sonatype repository snapshots" at "http://oss.sonatype.org/content/repositories/snapshots",
+                  "Sonatype repository releases"  at "http://oss.sonatype.org/content/repositories/releases",
+                  "Typesafe repository snapshots" at "http://repo.typesafe.com/typesafe/snapshots/",
+                  "Typesafe repository releases"  at "http://repo.typesafe.com/typesafe/releases/"
                 )
  
 scalacOptions ++= Seq("-unchecked", "-deprecation")
 
 libraryDependencies ++= Seq(
-	"org.mongodb" % "casbah_2.9.2" % "2.4.1",
+	"org.mongodb" %% "casbah" % "2.5.1" pomOnly(),
+	"com.typesafe.akka" %% "akka-actor" % "2.1.0",
 	"org.slf4j" % "slf4j-api" % "1.7.2",
-	"com.typesafe.akka" % "akka-actor" % "2.0.5"
+	"org.scalatest" %% "scalatest" % "1.9.1" % "test"
 )
 
 publishTo <<= version { v: String =>

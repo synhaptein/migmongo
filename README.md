@@ -7,7 +7,7 @@ MigMongo is a MongoDB schema migration manager written in Scala and inspired by 
 <dependency>
     <groupId>com.synhaptein</groupId>
 	<artifactId>migmongo_2.9.2</artifactId>
-	<version>1.0.1</version>
+	<version>1.0.1</version>                        s
 </dependency>
 ```
 
