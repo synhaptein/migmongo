@@ -15,7 +15,7 @@ resolvers ++= Seq("Sonatype repository snapshots" at "http://oss.sonatype.org/co
 scalacOptions ++= Seq("-unchecked", "-deprecation")
 
 libraryDependencies ++= Seq(
-	"org.mongodb" %% "casbah" % "2.5.1" pomOnly(),
+	"org.mongodb" %% "casbah" % "2.6.1" pomOnly(),
 	"com.typesafe.akka" %% "akka-actor" % "2.1.0",
 	"org.slf4j" % "slf4j-api" % "1.7.2",
 	"org.scalatest" %% "scalatest" % "1.9.1" % "test"
