@@ -20,8 +20,8 @@ libraryDependencies += "com.synhaptein" % "migmongo_2.9.2" % "1.0.2"
 ```xml
 <dependency>
     <groupId>com.synhaptein</groupId>
-    	<artifactId>migmongo_2.10.0</artifactId>
-    	<version>1.1.1</version>
+	<artifactId>migmongo_2.10.0</artifactId>
+	<version>1.1.1</version>
 </dependency>
 ```
 
