@@ -24,17 +24,16 @@ trait MigmongoEngine {
       if !dao.wasExecuted(changeGroup.group, changeSet)
     }
     yield {
-      def runChanges(changes: Change*) = {
-        for(change <- changes) {
-          try {
-            change.run(db)
-          }
-          catch {
-            case e: Exception =>
-              logger.error(change.toString, e)
-              throw e
-          }
+      def runChanges(changes: MongoDB => Unit) = {
+        try {
+          changes(db)
         }
+        catch {
+          case e: Exception =>
+            logger.error(changeSet.toString, e)
+            throw e
+        }
+
         dao.logChangeSet(changeGroup.group, changeSet)
         logger.info("ChangeSet " + changeSet.changeId + " has been executed")
       }
@@ -43,11 +42,11 @@ trait MigmongoEngine {
         case changeSet: AsyncChangeSet =>
           Future {
             logger.info("Start async ChangeSet " + changeSet.changeId)
-            runChanges(changeSet.changes:_*)
+            runChanges(changeSet.changes)
           }
         case changeSet: SyncChangeSet =>
           logger.info("Start sync ChangeSet " + changeSet.changeId)
-          runChanges(changeSet.changes:_*)
+          runChanges(changeSet.changes)
       }
     }
   }
