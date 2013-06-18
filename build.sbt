@@ -2,7 +2,7 @@ name := "migmongo"
 
 organization := "com.synhaptein"
 
-version := "1.0.1"
+version := "1.0.2"
 
 scalaVersion := "2.9.2"
 
@@ -14,7 +14,7 @@ resolvers ++= Seq("Sonatype snapshots"           at "http://oss.sonatype.org/con
 scalacOptions ++= Seq("-unchecked", "-deprecation")
 
 libraryDependencies ++= Seq(
-	"org.mongodb" % "casbah_2.9.2" % "2.4.1",
+	"org.mongodb" % "casbah_2.9.2" % "2.6.1",
 	"org.slf4j" % "slf4j-api" % "1.7.2",
 	"com.typesafe.akka" % "akka-actor" % "2.0.5"
 )
