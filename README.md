@@ -3,12 +3,30 @@
 MigMongo is a MongoDB schema migration manager written in Scala and inspired by mongeez.
 
 ### Add migmongo to your project
+
+#### Scala 2.9.2
 ```xml
 <dependency>
     <groupId>com.synhaptein</groupId>
-	<artifactId>migmongo_2.9.2</artifactId>
-	<version>1.0.1</version>
+    	<artifactId>migmongo_2.9.2</artifactId>
+    	<version>1.0.2</version>
 </dependency>
+```
+
+```scala
+libraryDependencies += "com.synhaptein" % "migmongo_2.9.2" % "1.0.2"
+```
+#### Scala 2.10.0
+```xml
+<dependency>
+    <groupId>com.synhaptein</groupId>
+    	<artifactId>migmongo_2.10.0</artifactId>
+    	<version>1.1.1</version>
+</dependency>
+```
+
+```scala
+libraryDependencies += "com.synhaptein" % "migmongo_2.10.0" % "1.1.1"
 ```
 
 ### Create your migrations
