@@ -2,6 +2,10 @@
 
 MigMongo is a MongoDB schema migration manager written in Scala and inspired by mongeez.
 
+### Note on Version 1.x
+
+Version 1.x works for mongodb >= 2.0, but since 2.4 you need to have admin access to use migmongo because of [db.eval](http://docs.mongodb.org/manual/reference/method/db.eval/)
+
 ### Add migmongo to your project
 
 #### Scala 2.9.2
