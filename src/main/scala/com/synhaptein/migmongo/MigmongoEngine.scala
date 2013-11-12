@@ -44,7 +44,7 @@ trait MigmongoEngine {
   private lazy val system = ActorSystem("MessageProcessor")
   private val asyncChangeActor = system.actorOf(Props(new AsyncChangeActor(db)))
   val db: MongoDB
-  implicit val timeout = Timeout(5 seconds)
+  implicit val timeout = Timeout(240 minutes)
 
   def process(closeDb: Boolean = false) = {
     var count = 0
