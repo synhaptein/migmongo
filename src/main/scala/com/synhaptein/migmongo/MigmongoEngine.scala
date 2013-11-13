@@ -47,42 +47,50 @@ trait MigmongoEngine {
   implicit val timeout = Timeout(240 minutes)
 
   def process(closeDb: Boolean = false) = {
-    var count = 0
-    for {
-      changeGroup <- changeGroups
-      changeSet <- changeGroup.changeSets
-      if !dao.wasExecuted(changeGroup.group, changeSet)
-    }
-    yield {
-      count += 1
-      def runChanges(changes: (MongoDB) => Unit) = {
-        try {
-          changes(db)
-        }
-        catch {
-          case e: Exception =>
-            logger.error(changeSet.toString, e)
-            throw e
-        }
-
-        dao.logChangeSet(changeGroup.group, changeSet)
-        logger.info("ChangeSet " + changeSet.changeId + " has been executed")
+    logger.info("Running db changeSets...")
+    try {
+      var count = 0
+      for {
+        changeGroup <- changeGroups
+        changeSet <- changeGroup.changeSets
+        if !dao.wasExecuted(changeGroup.group, changeSet)
       }
-
-      changeSet match {
-        case changeSet: AsyncChangeSet =>
-          val run = { () =>
-            logger.info("Start async ChangeSet " + changeSet.changeId)
-            runChanges(changeSet.changes)
+      yield {
+        count += 1
+        def runChanges(changes: (MongoDB) => Unit) = {
+          try {
+            changes(db)
           }
-          asyncChangeActor ! run
-        case changeSet: SyncChangeSet =>
-          logger.info("Start sync ChangeSet " + changeSet.changeId)
-          runChanges(changeSet.changes)
-      }
-    }
+          catch {
+            case e: Exception =>
+              logger.error(changeSet.toString, e)
+              throw e
+          }
 
-    (asyncChangeActor ? CloseDB(closeDb)) map (_ => count)
+          dao.logChangeSet(changeGroup.group, changeSet)
+          logger.info("ChangeSet " + changeSet.changeId + " has been executed")
+        }
+
+        changeSet match {
+          case changeSet: AsyncChangeSet =>
+            val run = { () =>
+              logger.info("Start async ChangeSet " + changeSet.changeId)
+              runChanges(changeSet.changes)
+            }
+            asyncChangeActor ! run
+          case changeSet: SyncChangeSet =>
+            logger.info("Start sync ChangeSet " + changeSet.changeId)
+            runChanges(changeSet.changes)
+        }
+      }
+
+      (asyncChangeActor ? CloseDB(closeDb)) map (_ => count)
+    }
+    catch {
+      case e: Throwable =>
+        logger.error("Error while processing", e)
+        throw e
+    }
   }
 
   protected def changeGroups(changeGroups: ChangeGroup*) {
