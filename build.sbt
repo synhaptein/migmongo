@@ -2,7 +2,7 @@ name := "migmongo"
 
 organization := "com.synhaptein"
 
-version := "2.1.1-SNAPSHOT"
+version := "2.1.2-SNAPSHOT"
 
 scalaVersion := "2.10.3"
 
