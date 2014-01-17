@@ -23,17 +23,17 @@ Version 2.x works for mongodb >= 2.0, but lost support for db.eval and use casba
 libraryDependencies += "com.synhaptein" % "migmongo_2.9.2" % "2.0.0"
 ```
 
-#### Scala 2.10.0
+#### Scala 2.10.x
 ```xml
 <dependency>
     <groupId>com.synhaptein</groupId>
-	<artifactId>migmongo_2.10.0</artifactId>
-	<version>2.0.0</version>
+	<artifactId>migmongo_2.10</artifactId>
+	<version>2.1.1</version>
 </dependency>
 ```
 
 ```scala
-libraryDependencies += "com.synhaptein" % "migmongo_2.10.0" % "2.0.0"
+libraryDependencies += "com.synhaptein" % "migmongo_2.10" % "2.1.1"
 ```
 
 ### Create your migrations
