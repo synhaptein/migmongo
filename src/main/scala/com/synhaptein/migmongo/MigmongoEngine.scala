@@ -106,7 +106,7 @@ trait MigmongoEngine {
     val mergedResults = Future.sequence(results.toList) map (l => l.filter(r => r).size)
 
     mergedResults foreach { _ =>
-      logger.error("Migrations finished")
+      logger.info("Migrations finished")
       db.connection.close()
     }
 
