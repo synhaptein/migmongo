@@ -1,33 +1,40 @@
 package com.synhaptein.migmongo.dao
 
-import com.mongodb.casbah.MongoDB
-import com.mongodb.casbah.commons.MongoDBObject
 import com.synhaptein.migmongo.commands.ChangeSet
 import java.util.Date
-import com.mongodb.WriteConcern
+import reactivemongo.api.DefaultDB
+import reactivemongo.bson.{BSONDateTime, BSONDocument}
+import reactivemongo.api.collections.default.BSONCollection
+import reactivemongo.api.indexes.{IndexType, Index}
+import reactivemongo.core.commands.Count
+import scala.concurrent.ExecutionContext.Implicits.global
 
-case class MigmongoDao(db: MongoDB) {
+case class MigmongoDao(db: DefaultDB) {
+  private val migmongo = db[BSONCollection]("migmongo")
+
   def ensureIndex = {
-    val indexes = MongoDBObject("file" -> 1, "changeId" -> 1, "author" -> 1)
-    db.getCollection("migmongo").ensureIndex(indexes)
+    val index = Index(Seq("file" -> IndexType.Ascending, "changeId" -> IndexType.Ascending,  "author" -> IndexType.Ascending))
+    migmongo.indexesManager.ensure(index)
   }
 
   def wasExecuted(group: String, changeSet: ChangeSet) = {
-    val query = MongoDBObject(
+    val query = BSONDocument(
       "group" -> group,
       "changeId" -> changeSet.changeId,
       "author" -> changeSet.author
     )
-    db.getCollection("migmongo").count(query) > 0
+
+    db.command(Count(migmongo.name, Some(query))) map (_ > 0)
   }
 
-  def logChangeSet(group: String, changeSet: ChangeSet) {
-    val log = MongoDBObject(
+  def logChangeSet(group: String, changeSet: ChangeSet) = {
+    val log = BSONDocument(
       "group" -> group,
       "changeId" -> changeSet.changeId,
       "author" -> changeSet.author,
-      "timestamp" -> new Date()
+      "timestamp" -> BSONDateTime(new Date().getTime)
     )
-    db.getCollection("migmongo").insert(log, WriteConcern.SAFE)
+
+    migmongo.insert(log)
   }
 }

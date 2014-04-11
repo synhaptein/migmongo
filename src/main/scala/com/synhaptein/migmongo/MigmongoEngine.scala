@@ -2,15 +2,13 @@ package com.synhaptein.migmongo
 
 import commands._
 import collection.mutable
-import com.mongodb.casbah.{MongoConnection, MongoDB}
 import commands.AsyncChangeSet
 import dao.MigmongoDao
 import org.slf4j.LoggerFactory
-import akka.actor.{Props, ActorSystem, Actor}
-import akka.pattern.ask
-import akka.util.Timeout
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
+import reactivemongo.api.{DefaultDB, MongoDriver}
+import scala.concurrent.{Future, Await}
 
 object MigmongoEngine {
   def db(uriStr: String) = {
@@ -28,11 +26,21 @@ object MigmongoEngine {
         throw new RuntimeException("Bad format MongoDB URI")
     }
 
-    lazy val connection = MongoConnection(uri.host, uri.port)
+    val connection = {
+      val driver = new MongoDriver
+      val conn = driver.connection(List(uri.host + ":" + uri.port))
 
-    val dbref = connection(uri.database)
-    uri.username foreach ( username => uri.password foreach ( password => dbref.authenticate(username, password.toString)))
-    dbref
+      for {
+        username <- uri.username
+        password <- uri.password
+      }
+      {
+        Await.result(conn.authenticate(uri.database, username, password), Duration(10, SECONDS))
+      }
+      conn
+    }
+
+    connection(uri.database)
   }
 }
 
@@ -41,73 +49,71 @@ trait MigmongoEngine {
   private lazy val logger = LoggerFactory.getLogger(loggerName)
   private val changeGroups = mutable.MutableList[ChangeGroup]()
   private lazy val dao = MigmongoDao(db)
-  private lazy val system = ActorSystem("MessageProcessor")
-  private val asyncChangeActor = system.actorOf(Props(new AsyncChangeActor(db)))
-  val db: MongoDB
-  implicit val timeout = Timeout(240 minutes)
+  val db: DefaultDB
 
-  def process(closeDb: Boolean = false) = {
+  def process() = {
     logger.info("Running db changeSets...")
-    try {
-      var count = 0
-      for {
-        changeGroup <- changeGroups
-        changeSet <- changeGroup.changeSets
-        if !dao.wasExecuted(changeGroup.group, changeSet)
-      }
-      yield {
-        count += 1
-        def runChanges(changes: (MongoDB) => Unit) = {
-          try {
-            changes(db)
-          }
-          catch {
-            case e: Exception =>
-              logger.error(changeSet.toString, e)
-              throw e
-          }
+    dao.ensureIndex
+    val results = for {
+      changeGroup <- changeGroups
+      changeSet <- changeGroup.changeSets
+    }
+    yield {
+      val wasExectuted = dao.wasExecuted(changeGroup.group, changeSet)
 
-          dao.logChangeSet(changeGroup.group, changeSet)
-          logger.info("ChangeSet " + changeSet.changeId + " has been executed")
-        }
-
-        changeSet match {
-          case changeSet: AsyncChangeSet =>
-            val run = { () =>
+      val result = changeSet match {
+        case changeSet: AsyncChangeSet =>
+          wasExectuted flatMap {
+            case true =>
+              Future.successful(false)
+            case _ =>
               logger.info("Start async ChangeSet " + changeSet.changeId)
-              runChanges(changeSet.changes)
-            }
-            asyncChangeActor ! run
-          case changeSet: SyncChangeSet =>
+              Future.sequence(changeSet.changes(db) map (_.map(_ => true))) map (_ => true)
+          }
+        case changeSet: SyncChangeSet =>
+          val isExecute = !Await.result(wasExectuted, Duration(1000, MINUTES))
+          if(isExecute) {
             logger.info("Start sync ChangeSet " + changeSet.changeId)
-            runChanges(changeSet.changes)
+            changeSet.changes(db).foreach { change =>
+              Await.result(change, Duration(1000, MINUTES))
+            }
+          }
+
+          Future.successful(isExecute)
+      }
+
+      val fresult = result flatMap { r =>
+        if(r) {
+          dao.logChangeSet(changeGroup.group, changeSet) map { _ =>
+            logger.info("ChangeSet " + changeSet.changeId + " has been executed")
+            r
+          }
+        }
+        else {
+          Future.successful(r)
         }
       }
 
-      (asyncChangeActor ? CloseDB(closeDb)) map (_ => count)
+      fresult.onFailure {
+        case e: Throwable =>
+          logger.info("ChangeSet " + changeSet.changeId + " could not be executed", e)
+          throw e
+      }
+
+      fresult
     }
-    catch {
-      case e: Throwable =>
-        logger.error("Error while processing", e)
-        throw e
+
+    val mergedResults = Future.sequence(results.toList) map (l => l.filter(r => r).size)
+
+    mergedResults foreach { _ =>
+      logger.error("Migrations finished")
+      db.connection.close()
     }
+
+    mergedResults
   }
 
   protected def changeGroups(changeGroups: ChangeGroup*) {
     this.changeGroups ++= changeGroups
-  }
-}
-
-case class CloseDB(closeDb: Boolean)
-
-class AsyncChangeActor(db: MongoDB) extends Actor {
-  def receive = {
-    case f: ( () => Unit ) =>
-      f()
-    case CloseDB(closeDb) =>
-      if(closeDb) {
-        db.underlying.getMongo.close()
-      }
-      sender ! CloseDB(closeDb)
   }
 }
