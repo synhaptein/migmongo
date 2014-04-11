@@ -61,5 +61,5 @@ case class MigrationMyApp(group: String) extends ChangeGroup {
 
 ```scala
 val db: DefaultDB = MigmongoEngine.db("mongodb://localhost/myApp")
-Migmongo(db).process()
+Migmongo(db).process() // It blocks till all synchronous changeSet are done
 ```
