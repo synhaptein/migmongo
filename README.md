@@ -60,5 +60,6 @@ case class MigrationMyApp(group: String) extends ChangeGroup {
 ### Launch the migrations
 
 ```scala
-Migmongo(MigmongoEngine.db("mongodb://localhost/myApp")).process()
+val db: DefaultDB = MigmongoEngine.db("mongodb://localhost/myApp")
+Migmongo(db).process()
 ```
