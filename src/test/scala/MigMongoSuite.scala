@@ -5,7 +5,8 @@ import concurrent.Await
 import org.scalatest.FunSuite
 import reactivemongo.api.collections.default.BSONCollection
 import reactivemongo.api.DefaultDB
-import reactivemongo.api.indexes.{IndexType, Index}
+import reactivemongo.api.indexes.Index
+import reactivemongo.api.indexes.IndexType._
 import reactivemongo.bson.BSONDocument
 import scala.concurrent.duration._
 
@@ -13,12 +14,12 @@ class MigMongoSuite extends FunSuite {
   test("Test a migration") {
     def createConnection = MigmongoEngine.db("mongodb://localhost/migmongo-test")
 
-    case class MigrationV1(group: String) extends ChangeGroup {
+    case class MigrationMyApp(group: String) extends ChangeGroup {
       changeSet("ChangeSet-1", "author1") { db =>
         Thread.sleep(5000)
         List(
           db[BSONCollection]("table1").insert(BSONDocument("name" -> "John Doe")),
-          db[BSONCollection]("table2").indexesManager.ensure(Index(Seq("field1" -> IndexType.Ascending, "field2" -> IndexType.Descending)))
+          db[BSONCollection]("table2").indexesManager.ensure(Index(Seq("field1" -> Ascending, "field2" -> Descending)))
         )
       }
 
@@ -37,21 +38,21 @@ class MigMongoSuite extends FunSuite {
         Thread.sleep(5000)
         List(
           db[BSONCollection]("table1").insert(BSONDocument("name" -> "Jane Doe")),
-          db[BSONCollection]("table2").indexesManager.ensure(Index(Seq("field1" -> IndexType.Ascending, "field2" -> IndexType.Descending)))
+          db[BSONCollection]("table2").indexesManager.ensure(Index(Seq("field1" -> Ascending, "field2" -> Descending)))
         )
       }
 
       changeSet("ChangeSet-4", "author1") { db =>
         List(
           db[BSONCollection]("table1").insert(BSONDocument("name" -> "Jane Doe")),
-          db[BSONCollection]("table2").indexesManager.ensure(Index(Seq("field1" -> IndexType.Ascending, "field2" -> IndexType.Descending)))
+          db[BSONCollection]("table2").indexesManager.ensure(Index(Seq("field1" -> Ascending, "field2" -> Descending)))
         )
       }
     }
 
     case class MigTest(db: DefaultDB) extends MigmongoEngine {
       changeGroups(
-        MigrationV1("v1")
+        MigrationMyApp("myApp")
       )
     }
 
