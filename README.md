@@ -39,7 +39,6 @@ case class Migmongo(db: DefaultDB) extends MigmongoEngine {
 
 case class MigrationMyApp(group: String) extends ChangeGroup {
      changeSet("ChangeSet-1", "author1") { db =>
-        Thread.sleep(5000)
         List(
           db[BSONCollection]("table1").insert(BSONDocument("name" -> "John Doe")),
           db[BSONCollection]("table2").indexesManager.ensure(Index(Seq("field1" -> Ascending, "field2" -> Descending)))
@@ -48,7 +47,6 @@ case class MigrationMyApp(group: String) extends ChangeGroup {
 
       // Will be fire-and-forget
       asyncChangeSet("ChangeSet-2", "author2") { db =>
-        Thread.sleep(5000)
         List(
         db[BSONCollection]("collection1").update(
           selector = BSONDocument(),
