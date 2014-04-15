@@ -7,40 +7,22 @@ import dao.MigmongoDao
 import org.slf4j.LoggerFactory
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
-import reactivemongo.api.{DefaultDB, MongoDriver}
+import reactivemongo.api.{MongoConnection, DefaultDB, MongoDriver}
 import scala.concurrent.{Future, Await}
+import scala.util.{Failure, Success}
 
 object MigmongoEngine {
   def db(uriStr: String) = {
-    case class MongoURI(host: String, port: Int, username: Option[String], password: Option[String], database: String)
+    val driver = new MongoDriver
 
-    val UriPattern = "mongodb://(.*):(.*)@(.*):([0-9]*)/(.*)".r
-    val UriPatternSimple = "mongodb://(.*)/(.*)".r
-
-    val uri = uriStr match {
-      case UriPattern(username, password, host, port, database) =>
-        MongoURI(host, port.toInt, Some(username), Some(password), database)
-      case UriPatternSimple(host, database) =>
-        MongoURI(host, 27017, None, None, database)
-      case _ =>
-        throw new RuntimeException("Bad format MongoDB URI")
+    val (uri, connection) = MongoConnection.parseURI(uriStr) match {
+      case Success(parsedUri) =>
+        (parsedUri, driver.connection(parsedUri))
+      case Failure(e) =>
+        throw e
     }
 
-    val connection = {
-      val driver = new MongoDriver
-      val conn = driver.connection(List(uri.host + ":" + uri.port))
-
-      for {
-        username <- uri.username
-        password <- uri.password
-      }
-      {
-        Await.result(conn.authenticate(uri.database, username, password), Duration(10, SECONDS))
-      }
-      conn
-    }
-
-    connection(uri.database)
+    connection(uri.db.get)
   }
 }
 
