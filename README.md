@@ -21,7 +21,7 @@ Version 1.1.1 works for mongodb >= 2.0, but since 2.4 you need to have admin acc
 <dependency>
     <groupId>com.synhaptein</groupId>
 	<artifactId>migmongo_2.10</artifactId>
-	<version>3.0.0</version>
+	<version>3.0.1</version>
 </dependency>
 ```
 
