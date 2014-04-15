@@ -10,25 +10,16 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import reactivemongo.api.{MongoConnection, DefaultDB, MongoDriver}
 import scala.concurrent.{Future, Await}
 import scala.util.{Failure, Success}
+import akka.actor.ActorSystem
 
-object MigmongoEngine {
-  def db(uriStr: String) = {
-    val driver = new MongoDriver
-
-    val (uri, connection) = MongoConnection.parseURI(uriStr) match {
-      case Success(parsedUri) =>
-        (parsedUri, driver.connection(parsedUri))
-      case Failure(e) =>
-        throw e
-    }
-
-    connection(uri.db.get)
-  }
+object Migmongo {
+  private val loggerName = "migmongo"
+  lazy val logger = LoggerFactory.getLogger(loggerName)
 }
 
 trait MigmongoEngine {
-  private val loggerName = this.getClass.getName
-  private lazy val logger = LoggerFactory.getLogger(loggerName)
+  import Migmongo.logger
+
   private val changeGroups = mutable.MutableList[ChangeGroup]()
   private lazy val dao = MigmongoDao(db)
   val db: DefaultDB
@@ -41,11 +32,11 @@ trait MigmongoEngine {
       changeSet <- changeGroup.changeSets
     }
     yield {
-      val wasExectuted = dao.wasExecuted(changeGroup.group, changeSet)
+      val wasExecuted = dao.wasExecuted(changeGroup.group, changeSet)
 
       val result = changeSet match {
         case changeSet: AsyncChangeSet =>
-          wasExectuted flatMap {
+          wasExecuted flatMap {
             case true =>
               Future.successful(false)
             case _ =>
@@ -53,7 +44,7 @@ trait MigmongoEngine {
               Future.sequence(changeSet.changes(db) map (_.map(_ => true))) map (_ => true)
           }
         case changeSet: SyncChangeSet =>
-          val isExecute = !Await.result(wasExectuted, Duration(1000, MINUTES))
+          val isExecute = !Await.result(wasExecuted, Duration(1000, MINUTES))
           if(isExecute) {
             logger.info("Start sync ChangeSet " + changeSet.changeId)
             changeSet.changes(db).foreach { change =>
@@ -89,7 +80,6 @@ trait MigmongoEngine {
 
     mergedResults foreach { _ =>
       logger.info("Migrations finished")
-      db.connection.close()
     }
 
     mergedResults

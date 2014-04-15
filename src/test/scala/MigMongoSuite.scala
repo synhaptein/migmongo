@@ -4,19 +4,38 @@ import com.synhaptein.migmongo.MigmongoEngine
 import concurrent.Await
 import org.scalatest.FunSuite
 import reactivemongo.api.collections.default.BSONCollection
-import reactivemongo.api.DefaultDB
+import reactivemongo.api.{MongoConnection, MongoDriver, DefaultDB}
 import reactivemongo.api.indexes.Index
 import reactivemongo.api.indexes.IndexType._
 import reactivemongo.bson.BSONDocument
 import scala.concurrent.duration._
+import scala.util.{Failure, Success}
 
 class MigMongoSuite extends FunSuite {
+  val driver = MongoDriver()
+
+  def connectTo(uriStr: String) = {
+    val uri = MongoConnection.parseURI(uriStr) match {
+      case Success(parsedUri) =>
+        parsedUri
+      case Failure(e) =>
+        throw e
+    }
+
+    val connection = driver.connection(uri)
+
+    uri.authenticate foreach { auth =>
+      Await.result(connection.authenticate(auth.db, auth.user, auth.password), Duration(10, SECONDS))
+    }
+
+    connection(uri.db.get)
+  }
+
   test("Test a migration") {
-    def createConnection = MigmongoEngine.db("mongodb://localhost/migmongo-test")
+    def createConnection = connectTo("mongodb://localhost/migmongo-test")
 
     case class MigrationMyApp(group: String) extends ChangeGroup {
       changeSet("ChangeSet-1", "author1") { db =>
-        Thread.sleep(5000)
         List(
           db[BSONCollection]("table1").insert(BSONDocument("name" -> "John Doe")),
           db[BSONCollection]("table2").indexesManager.ensure(Index(Seq("field1" -> Ascending, "field2" -> Descending)))
@@ -25,7 +44,6 @@ class MigMongoSuite extends FunSuite {
 
       // Will be fire-and-forget
       asyncChangeSet("ChangeSet-2", "author2") { db =>
-        Thread.sleep(5000)
         List(
         db[BSONCollection]("collection1").update(
           selector = BSONDocument(),
@@ -35,7 +53,6 @@ class MigMongoSuite extends FunSuite {
       }
 
       changeSet("ChangeSet-3", "author1") { db =>
-        Thread.sleep(5000)
         List(
           db[BSONCollection]("table1").insert(BSONDocument("name" -> "Jane Doe")),
           db[BSONCollection]("table2").indexesManager.ensure(Index(Seq("field1" -> Ascending, "field2" -> Descending)))
@@ -61,6 +78,6 @@ class MigMongoSuite extends FunSuite {
     Await.result(db[BSONCollection]("migmongo").remove(BSONDocument()), 20 seconds)
 
     assert(Await.result(MigTest(db).process(), 30 seconds) === 4)
-    assert(Await.result(MigTest(createConnection).process(), 30 seconds) === 0)
+    assert(Await.result(MigTest(db).process(), 30 seconds) === 0)
   }
 }

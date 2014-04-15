@@ -8,9 +8,19 @@ import reactivemongo.api.collections.default.BSONCollection
 import reactivemongo.api.indexes.{IndexType, Index}
 import reactivemongo.core.commands.Count
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 case class MigmongoDao(db: DefaultDB) {
   private val migmongo = db[BSONCollection]("migmongo")
+
+  private def retry[T](n: Int)(fn: => Future[T]): Future[T] = {
+    fn.recoverWith {
+      case e: Throwable =>
+        Thread.sleep(300)
+        if (n > 1) retry(n - 1)(fn)
+        else throw e
+    }
+  }
 
   def ensureIndex = {
     val index = Index(Seq("file" -> IndexType.Ascending, "changeId" -> IndexType.Ascending,  "author" -> IndexType.Ascending))
@@ -24,7 +34,9 @@ case class MigmongoDao(db: DefaultDB) {
       "author" -> changeSet.author
     )
 
-    db.command(Count(migmongo.name, Some(query))) map (_ > 0)
+    retry(10) {
+      db.command(Count(migmongo.name, Some(query))) map (_ > 0)
+    }
   }
 
   def logChangeSet(group: String, changeSet: ChangeSet) = {

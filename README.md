@@ -21,12 +21,12 @@ Version 1.1.1 works for mongodb >= 2.0, but since 2.4 you need to have admin acc
 <dependency>
     <groupId>com.synhaptein</groupId>
 	<artifactId>migmongo_2.10</artifactId>
-	<version>3.0.1</version>
+	<version>3.0.2</version>
 </dependency>
 ```
 
 ```scala
-libraryDependencies += "com.synhaptein" %% "migmongo" % "3.0.1"
+libraryDependencies += "com.synhaptein" %% "migmongo" % "3.0.2"
 ```
 
 ### Create your migrations
@@ -60,6 +60,6 @@ case class MigrationMyApp(group: String) extends ChangeGroup {
 ### Launch the migrations
 
 ```scala
-val db: DefaultDB = MigmongoEngine.db("mongodb://localhost/myApp")
+val db: DefaultDB = getDatabase(...) // Get an instance of your db from reactivemongo
 Migmongo(db).process() // It blocks till all synchronous changeSet are done
 ```
