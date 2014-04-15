@@ -26,7 +26,7 @@ Version 1.1.1 works for mongodb >= 2.0, but since 2.4 you need to have admin acc
 ```
 
 ```scala
-libraryDependencies += "com.synhaptein" %% "migmongo" % "3.0.0"
+libraryDependencies += "com.synhaptein" %% "migmongo" % "3.0.1"
 ```
 
 ### Create your migrations
