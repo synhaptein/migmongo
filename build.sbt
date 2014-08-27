@@ -4,9 +4,9 @@ organization := "com.synhaptein"
 
 version := "3.0.2"
 
-scalaVersion := "2.10.3"
+scalaVersion := "2.11.2"
 
-resolvers ++= Seq("Sonatype repository snapshots" at "http://oss.sonatype.org/content/repositories/snapshots",
+resolvers ++= Seq("Sonatype repository snapshots" at "https://oss.sonatype.org/content/repositories/snapshots",
                   "Sonatype repository releases"  at "http://oss.sonatype.org/content/repositories/releases",
                   "Typesafe repository snapshots" at "http://repo.typesafe.com/typesafe/snapshots/",
                   "Typesafe repository releases"  at "http://repo.typesafe.com/typesafe/releases/"
@@ -15,10 +15,10 @@ resolvers ++= Seq("Sonatype repository snapshots" at "http://oss.sonatype.org/co
 scalacOptions ++= Seq("-unchecked", "-deprecation")
 
 libraryDependencies ++= Seq(
-	"org.reactivemongo" %% "reactivemongo" % "0.10.0",
+	"org.reactivemongo" %% "reactivemongo" % "0.10.5.akka23-SNAPSHOT",
 	"ch.qos.logback" % "logback-classic" % "1.1.1",
 	"org.slf4j" % "slf4j-api" % "1.7.6",
-	"org.scalatest" %% "scalatest" % "1.9.1" % "test"
+	"org.scalatest" %% "scalatest" % "2.2.0" % "test"
 )
 
 publishTo <<= version { v: String =>
