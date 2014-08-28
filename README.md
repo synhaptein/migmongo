@@ -1,22 +1,16 @@
 ### What is migmongo?
 
-MigMongo is a MongoDB schema migration manager written in Scala and inspired by mongeez.
+MigMongo is a MongoDB schema migration manager written in Scala and inspired by mongeez and liquibase.
 
 ### Note on Versions
 
 #### Current
 
-Version 3.x is tested with mongodb 2.4.x and use reactivemongo instead of casbah (current)
-
-#### Older (end-of-life)
-
-Version 2.x works for mongodb >= 2.0, but lost support for db.eval and use casbah directly
-
-Version 1.1.1 works for mongodb >= 2.0, but since 2.4 you need to have admin access to use migmongo because of [db.eval](http://docs.mongodb.org/manual/reference/method/db.eval/)
+Version 3.x is tested with mongodb 2.4.x and use reactivemongo
 
 ### Add migmongo to your project
 
-#### Scala 2.10.x
+#### Scala 2.10.x or 2.11.x
 ```xml
 <dependency>
     <groupId>com.synhaptein</groupId>
@@ -63,3 +57,9 @@ case class MigrationMyApp(group: String) extends ChangeGroup {
 val db: DefaultDB = getDatabase(...) // Get an instance of your db from reactivemongo
 Migmongo(db).process() // It blocks till all synchronous changeSet are done
 ```
+
+
+### License
+
+Apache License Version 2.0
+http://apache.org/licenses/LICENSE-2.0.txt
