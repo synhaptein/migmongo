@@ -15,12 +15,12 @@ Version 3.x is tested with mongodb 2.4.x and use reactivemongo
 <dependency>
     <groupId>com.synhaptein</groupId>
 	<artifactId>migmongo_2.10</artifactId>
-	<version>3.0.2</version>
+	<version>3.0.3</version>
 </dependency>
 ```
 
 ```scala
-libraryDependencies += "com.synhaptein" %% "migmongo" % "3.0.2"
+libraryDependencies += "com.synhaptein" %% "migmongo" % "3.0.3"
 ```
 
 ### Create your migrations
