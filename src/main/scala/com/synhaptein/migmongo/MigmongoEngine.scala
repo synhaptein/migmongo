@@ -24,7 +24,7 @@ trait MigmongoEngine {
   private lazy val dao = MigmongoDao(db)
   val db: DefaultDB
 
-  def process() = {
+  def process(timeout: Duration = Duration(1000, MINUTES)) = {
     logger.info("Running db changeSets...")
     dao.ensureIndex
     val results = for {
@@ -44,11 +44,11 @@ trait MigmongoEngine {
               Future.sequence(changeSet.changes(db) map (_.map(_ => true))) map (_ => true)
           }
         case changeSet: SyncChangeSet =>
-          val isExecute = !Await.result(wasExecuted, Duration(1000, MINUTES))
+          val isExecute = !Await.result(wasExecuted, Duration(30, SECONDS))
           if(isExecute) {
             logger.info("Start sync ChangeSet " + changeSet.changeId)
             changeSet.changes(db).foreach { change =>
-              Await.result(change, Duration(1000, MINUTES))
+              Await.result(change, changeSet.timeout.getOrElse(timeout))
             }
           }
 
