@@ -1,13 +1,14 @@
-import scala.concurrent.ExecutionContext.Implicits.global
-import com.synhaptein.migmongo.commands.{ChangeGroup}
 import com.synhaptein.migmongo.MigmongoEngine
-import concurrent.Await
+import com.synhaptein.migmongo.commands.ChangeGroup
 import org.scalatest.FunSuite
-import reactivemongo.api.collections.default.BSONCollection
-import reactivemongo.api.{MongoConnection, MongoDriver, DefaultDB}
+import reactivemongo.api.collections.bson.BSONCollection
 import reactivemongo.api.indexes.Index
 import reactivemongo.api.indexes.IndexType._
+import reactivemongo.api.{DefaultDB, MongoConnection, MongoDriver}
 import reactivemongo.bson.BSONDocument
+
+import scala.concurrent.Await
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.util.{Failure, Success}
 

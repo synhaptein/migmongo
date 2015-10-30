@@ -3,8 +3,8 @@ package com.synhaptein.migmongo.dao
 import com.synhaptein.migmongo.commands.ChangeSet
 import java.util.Date
 import reactivemongo.api.DefaultDB
+import reactivemongo.api.collections.bson.BSONCollection
 import reactivemongo.bson.{BSONDateTime, BSONDocument}
-import reactivemongo.api.collections.default.BSONCollection
 import reactivemongo.api.indexes.{IndexType, Index}
 import reactivemongo.core.commands.Count
 import scala.concurrent.ExecutionContext.Implicits.global
